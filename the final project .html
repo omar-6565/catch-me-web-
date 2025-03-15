@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catch the Button!</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #1a1a1a; /* Dark default background */
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      transition: background-color 0.5s;
+    }
+    h1 {
+      margin-top: 20px;
+      color: #fff; /* White text for contrast */
+      transition: color 0.5s; /* Smooth transition for title color */
+    }
+    #game-area {
+      position: relative;
+      width: 100%;
+      height: 80vh;
+      margin-top: 20px;
+    }
+    .catch-me {
+      position: absolute;
+      padding: 15px 30px;
+      font-size: 18px;
+      background-color: #ff6f61;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: top 0.5s, left 0.5s;
+    }
+    .small-button {
+      position: absolute;
+      padding: 10px 20px;
+      font-size: 14px;
+      background-color: #ff6f61;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: top 0.5s, left 0.5s;
+    }
+    #message {
+      margin-top: 20px;
+      font-size: 24px;
+      color: #fff; /* White text for contrast */
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    #silly-talk {
+      margin-top: 10px;
+      font-size: 18px;
+      color: #ccc; /* Light gray text for contrast */
+      font-style: italic;
+    }
+    #timer {
+      margin-top: 20px;
+      font-size: 24px;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="title">Catch the Button if You Can!</h1>
+  <div id="timer">Time left: 45 seconds</div>
+  <div id="game-area">
+    <button id="catch-me" class="catch-me">Catch Me!</button>
+    <div id="silly-talk"></div>
+  </div>
+  <div id="message">You are very lucky because you caught me! 🎉</div>
+
+  <script>
+    const gameArea = document.getElementById('game-area');
+    const message = document.getElementById('message');
+    const sillyTalk = document.getElementById('silly-talk');
+    const title = document.getElementById('title');
+    const timerDisplay = document.getElementById('timer');
+
+    const nervousSentences = [
+      "Oh no, not again!",
+      "I can't handle this pressure!",
+      "Why are you chasing me?!",
+      "I think I'm going to faint!",
+      "This is too stressful!",
+      "I need a break!",
+      "My heart is racing!",
+      "I’m sweating bullets!",
+      "I can’t keep running!",
+      "I’m not ready for this!",
+    ];
+
+    let timeLeft = 45; // 45-second timer
+    let timerInterval;
+
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = `Time left: ${timeLeft} seconds`;
+
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          endGame(false); // Time's up
+        }
+      }, 1000);
+    }
+
+    function endGame(isWin) {
+      clearInterval(timerInterval); // Stop the timer
+      if (isWin) {
+        message.textContent = "You are very lucky because you caught me! 🎉";
+      } else {
+        message.textContent = "Time's up! Better luck next time! ⏳";
+      }
+      message.style.display = 'block';
+      sillyTalk.textContent = "Game over!";
+    }
+
+    function getRandomDarkColor() {
+      // Generate dark colors by limiting the range of RGB values
+      const r = Math.floor(Math.random() * 128); // 0-127
+      const g = Math.floor(Math.random() * 128); // 0-127
+      const b = Math.floor(Math.random() * 128); // 0-127
+      return `rgb(${r}, ${g}, ${b})`;
+    }
+
+    function getRandomLightColor() {
+      // Generate light colors by setting RGB values above 128
+      const r = Math.floor(Math.random() * 128) + 128; // 128-255
+      const g = Math.floor(Math.random() * 128) + 128; // 128-255
+      const b = Math.floor(Math.random() * 128) + 128; // 128-255
+      return `rgb(${r}, ${g}, ${b})`;
+    }
+
+    function createButton(x, y, isSmall = false) {
+      const button = document.createElement('button');
+      button.className = isSmall ? 'small-button' : 'catch-me';
+      button.textContent = isSmall ? "Catch me, stupid!" : nervousSentences[Math.floor(Math.random() * nervousSentences.length)];
+      button.style.left = `${x}px`;
+      button.style.top = `${y}px`;
+
+      button.addEventListener('mouseover', () => {
+        const maxX = gameArea.clientWidth - button.clientWidth;
+        const maxY = gameArea.clientHeight - button.clientHeight;
+        const newX = Math.floor(Math.random() * maxX);
+        const newY = Math.floor(Math.random() * maxY);
+
+        button.style.left = `${newX}px`;
+        button.style.top = `${newY}px`;
+
+        sillyTalk.textContent = "Keep trying!";
+      });
+
+      button.addEventListener('click', () => {
+        // Change the background color of the page to a dark color
+        document.body.style.backgroundColor = getRandomDarkColor();
+
+        // Change the title color to a random light color
+        title.style.color = getRandomLightColor();
+
+        if (document.querySelectorAll('.catch-me, .small-button').length === 1) {
+          endGame(true); // Win the game
+        }
+        button.remove();
+      });
+
+      gameArea.appendChild(button);
+    }
+
+    const mainButton = document.getElementById('catch-me');
+    mainButton.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const x = parseFloat(mainButton.style.left) || 0;
+      const y = parseFloat(mainButton.style.top) || 0;
+
+      // Remove the main button
+      mainButton.remove();
+
+      // Create 3 new buttons with nervous sentences
+      createButton(x, y);
+      createButton(x + 100, y + 100);
+      createButton(x - 100, y - 100);
+
+      // Create a small button with "Catch me, stupid!"
+      createButton(x + 50, y - 50, true);
+
+      // Start the timer
+      startTimer();
+    });
+
+    mainButton.addEventListener('mouseover', () => {
+      const maxX = gameArea.clientWidth - mainButton.clientWidth;
+      const maxY = gameArea.clientHeight - mainButton.clientHeight;
+      const newX = Math.floor(Math.random() * maxX);
+      const newY = Math.floor(Math.random() * maxY);
+
+      mainButton.style.left = `${newX}px`;
+      mainButton.style.top = `${newY}px`;
+
+      sillyTalk.textContent = "Nope, not today!";
+    });
+  </script>
+</body>
+</html>
